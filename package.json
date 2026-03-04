@@ -1,0 +1,30 @@
+{
+  "name": "@musekit/billing",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "musekit",
+    "billing",
+    "stripe"
+  ],
+  "author": "MuseKit",
+  "license": "ISC",
+  "description": "Stripe billing system for the MuseKit SaaS platform",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.98.0",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.3.3",
+    "express": "^5.2.1",
+    "stripe": "^20.4.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

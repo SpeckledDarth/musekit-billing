@@ -1,0 +1,84 @@
+You are building the @musekit/billing package for the MuseKit SaaS platform.
+
+This is a standalone npm package that provides the complete Stripe billing system.
+The Stripe account exists but is in DEVELOPMENT MODE (test keys only).
+
+## Tech Stack Rules
+- Next.js 14.2.18 (do NOT use 15+ or 16+ features)
+- React 18.3.1
+- Tailwind CSS v3.4.x (do NOT upgrade to v4)
+- TypeScript strict mode
+
+## What to Build
+
+### Stripe Client (src/stripe.ts)
+- Initialize Stripe with STRIPE_SECRET_KEY
+- Initialize client-side Stripe with NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+
+### Plan Definitions (src/plans.ts)
+- Plan tiers with feature limits:
+  - Starter: $0/mo (free), basic features
+  - Basic: $29/mo, expanded limits
+  - Premium: $99/mo, unlimited
+- Feature limits per tier (posts, accounts, team members, storage, etc.)
+- Monthly and annual billing options
+
+### Checkout (src/checkout.ts)
+- createCheckoutSession(userId, planId, interval) — creates Stripe checkout
+- createCustomerPortalSession(userId) — redirect to Stripe customer portal
+- getSubscriptionStatus(userId) — returns current plan and status
+
+### Webhook Handler (src/webhooks.ts)
+- verifyWebhookSignature(payload, signature)
+- Handle these events:
+  - checkout.session.completed — create/update subscription record
+  - customer.subscription.updated — sync plan changes
+  - customer.subscription.deleted — mark subscription canceled
+  - invoice.payment_succeeded — record successful payment
+  - invoice.payment_failed — mark subscription past_due
+
+### Feature Gating (src/gating.ts)
+- checkFeatureAccess(userId, feature) — can user use this feature?
+- getFeatureLimits(plan) — returns limits for a plan
+- isWithinLimit(userId, feature, currentUsage) — is user under their limit?
+- requirePlan(minimumPlan) — middleware/guard for API routes
+
+### Product Registry (src/registry.ts)
+- Multi-product tier resolution system
+- registerProduct(productConfig) — register a product's tier structure
+- resolveUserTier(userId, productId) — determine user's tier for a product
+
+### Subscription Helpers (src/helpers.ts)
+- isActive(subscription) — boolean
+- isPastDue(subscription) — boolean
+- isCanceled(subscription) — boolean
+- isTrialing(subscription) — boolean
+- daysUntilRenewal(subscription) — number
+- formatPlanName(plan) — display string
+
+### Dependencies
+- Install: @musekit/shared (from github:SpeckledDarth/musekit-shared)
+- Install: @musekit/database (from github:SpeckledDarth/musekit-database)
+- Install: stripe
+
+### Supabase Tables Used
+- subscriptions (read/write — subscription records)
+- profiles (read — user lookup for Stripe customer ID)
+
+### Environment Secrets Needed
+- STRIPE_SECRET_KEY
+- NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (Open Issue #2 — add this key)
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY
+- SUPABASE_SERVICE_ROLE_KEY
+
+### Reference Code
+Original: github.com/SpeckledDarth/master-saas-muse
+Look in: src/lib/stripe/, src/app/api/stripe/, src/app/api/billing/, src/components/pricing/
+
+### Rules
+- Stripe is in DEVELOPMENT MODE — use test keys only
+- Export everything from src/index.ts
+- Create replit.md and MODULE.md
+- Do NOT create UI components — billing UI lives in admin and web app
+- This module is logic/API only (checkout, webhooks, gating, helpers)
