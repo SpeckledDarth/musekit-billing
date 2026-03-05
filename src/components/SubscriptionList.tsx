@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import {
   Search,
@@ -107,8 +107,19 @@ export function SubscriptionList({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const [showBulkCancelDialog, setShowBulkCancelDialog] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   const perPage = 25;
+
+  useEffect(() => {
+    if (!showBulkCancelDialog) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowBulkCancelDialog(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    dialogRef.current?.focus();
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showBulkCancelDialog]);
 
   const fetchSubscriptions = useCallback(async () => {
     setLoading(true);
@@ -390,6 +401,10 @@ export function SubscriptionList({
                   key={sub.id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer"
                   onClick={() => onSelectSubscription?.(sub)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectSubscription?.(sub); } }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`View subscription for ${sub.user_name || sub.user_email || 'unknown user'}`}
                 >
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <input
@@ -452,8 +467,8 @@ export function SubscriptionList({
       )}
 
       {showBulkCancelDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowBulkCancelDialog(false)}>
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowBulkCancelDialog(false)} role="dialog" aria-modal="true" aria-label="Bulk cancel subscriptions">
+          <div ref={dialogRef} tabIndex={-1} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 max-w-md w-full mx-4 outline-none" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />

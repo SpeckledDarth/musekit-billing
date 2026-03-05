@@ -2,6 +2,7 @@ import Stripe from 'stripe';
 import { getStripe } from './stripe';
 import { getSupabaseAdmin } from './lib/database';
 import { getPlanByPriceId } from './plans';
+import { logAuditEvent } from './audit';
 
 export function verifyWebhookSignature(
   payload: string | Buffer,
@@ -77,6 +78,14 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     console.error('Error upserting subscription:', error);
     throw error;
   }
+
+  await logAuditEvent({
+    action: 'subscription.created',
+    entity_type: 'subscription',
+    entity_id: subscriptionId,
+    actor_id: userId,
+    metadata: { stripePriceId, status: sub.status, source: 'stripe_webhook' },
+  });
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
@@ -105,6 +114,14 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
     console.error('Error updating subscription:', error);
     throw error;
   }
+
+  await logAuditEvent({
+    action: 'subscription.updated',
+    entity_type: 'subscription',
+    entity_id: sub.id,
+    actor_id: userId,
+    metadata: { stripePriceId, status: sub.status, cancel_at_period_end: sub.cancel_at_period_end, source: 'stripe_webhook' },
+  });
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
@@ -128,6 +145,14 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
     console.error('Error canceling subscription:', error);
     throw error;
   }
+
+  await logAuditEvent({
+    action: 'subscription.deleted',
+    entity_type: 'subscription',
+    entity_id: sub.id,
+    actor_id: userId,
+    metadata: { source: 'stripe_webhook' },
+  });
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
@@ -148,6 +173,13 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
     console.error('Error recording payment success:', error);
     throw error;
   }
+
+  await logAuditEvent({
+    action: 'subscription.payment_succeeded',
+    entity_type: 'subscription',
+    entity_id: subscriptionId,
+    metadata: { invoiceId: inv.id, source: 'stripe_webhook' },
+  });
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
@@ -168,4 +200,11 @@ async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
     console.error('Error recording payment failure:', error);
     throw error;
   }
+
+  await logAuditEvent({
+    action: 'subscription.payment_failed',
+    entity_type: 'subscription',
+    entity_id: subscriptionId,
+    metadata: { invoiceId: inv.id, source: 'stripe_webhook' },
+  });
 }

@@ -18,7 +18,7 @@ src/
 ├── stripe.ts                   # Stripe client initialization
 ├── plans.ts                    # Plan tier definitions (Starter/Basic/Premium)
 ├── checkout.ts                 # Checkout session, portal, subscription status
-├── webhooks.ts                 # Stripe webhook handler
+├── webhooks.ts                 # Stripe webhook handler (all mutations emit audit logs)
 ├── gating.ts                   # Feature access gating and plan guards
 ├── registry.ts                 # Multi-product tier resolution
 ├── helpers.ts                  # Subscription utility helpers
@@ -67,8 +67,8 @@ src/
 
 ## Components
 All components use "use client" directive and are designed for Next.js 14 integration.
-- **SubscriptionDetail** — Slide-over panel showing subscription info (plan name, MRR), payment history, status timeline, navigable breadcrumb, and admin actions (cancel, change plan, extend trial, apply credit) with confirmation dialogs. All admin actions emit audit log entries.
-- **SubscriptionList** — Data table with column sorting (User, Plan, MRR, Status, Created, Period End), search, status filter, plan tier filter (All/Starter/Basic/Premium), pagination (25/page, URL-persisted), bulk cancel with floating action bar, CSV export (includes Plan and MRR columns), and clickable rows
+- **SubscriptionDetail** — Slide-over panel showing subscription info (plan name, MRR), payment history, status timeline, navigable breadcrumb, and admin actions (cancel, change plan, extend trial, apply credit) with confirmation dialogs. All admin actions emit audit log entries. Accessible: role="dialog", aria-modal, aria-labels on icon buttons, Escape key to close.
+- **SubscriptionList** — Data table with column sorting (User, Plan, MRR, Status, Created, Period End), search, status filter, plan tier filter (All/Starter/Basic/Premium), pagination (25/page, URL-persisted), bulk cancel with floating action bar, CSV export (includes Plan and MRR columns), and clickable rows. Accessible: keyboard-navigable rows (Enter/Space), Escape to close dialogs, role="dialog" on bulk cancel modal.
 - **PricingPage** — Responsive pricing grid with monthly/annual toggle, Stripe checkout integration, login-aware CTAs
 
 ## SEO Exports

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import {
   X,
@@ -129,6 +129,25 @@ export function SubscriptionDetail({
   const [showCreditDialog, setShowCreditDialog] = useState(false);
   const [creditAmount, setCreditAmount] = useState('');
   const [creditDescription, setCreditDescription] = useState('');
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showCancelDialog) setShowCancelDialog(false);
+        else if (showChangePlanDialog) setShowChangePlanDialog(false);
+        else if (showExtendTrialDialog) setShowExtendTrialDialog(false);
+        else if (showCreditDialog) setShowCreditDialog(false);
+        else onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose, showCancelDialog, showChangePlanDialog, showExtendTrialDialog, showCreditDialog]);
+
+  useEffect(() => {
+    panelRef.current?.focus();
+  }, []);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -247,7 +266,7 @@ export function SubscriptionDetail({
         <div className="w-full max-w-2xl bg-white dark:bg-gray-900 shadow-xl p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Subscription Not Found</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <button onClick={onClose} aria-label="Close" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -268,9 +287,11 @@ export function SubscriptionDetail({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/50" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/50" onClick={onClose} role="dialog" aria-modal="true" aria-label="Subscription details">
       <div
-        className="w-full max-w-2xl bg-white dark:bg-gray-900 shadow-xl overflow-y-auto"
+        ref={panelRef}
+        tabIndex={-1}
+        className="w-full max-w-2xl bg-white dark:bg-gray-900 shadow-xl overflow-y-auto outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center z-10">
@@ -286,6 +307,7 @@ export function SubscriptionDetail({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close subscription details"
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           >
             <X className="w-5 h-5" />
@@ -393,6 +415,7 @@ export function SubscriptionDetail({
                               href={inv.hosted_invoice_url}
                               target="_blank"
                               rel="noopener noreferrer"
+                              aria-label="View invoice"
                               className="text-indigo-600 dark:text-indigo-400 hover:underline"
                             >
                               <ExternalLink className="w-4 h-4 inline" />
@@ -443,7 +466,7 @@ export function SubscriptionDetail({
         </div>
 
         {showCancelDialog && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50" onClick={() => setShowCancelDialog(false)}>
+          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50" onClick={() => setShowCancelDialog(false)} role="dialog" aria-modal="true" aria-label="Cancel subscription">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
@@ -484,7 +507,7 @@ export function SubscriptionDetail({
         )}
 
         {showChangePlanDialog && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50" onClick={() => setShowChangePlanDialog(false)}>
+          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50" onClick={() => setShowChangePlanDialog(false)} role="dialog" aria-modal="true" aria-label="Change plan">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Change Plan</h3>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Stripe Price ID</label>
@@ -519,7 +542,7 @@ export function SubscriptionDetail({
         )}
 
         {showExtendTrialDialog && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50" onClick={() => setShowExtendTrialDialog(false)}>
+          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50" onClick={() => setShowExtendTrialDialog(false)} role="dialog" aria-modal="true" aria-label="Extend trial">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Extend Trial</h3>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Trial End Date</label>
@@ -554,7 +577,7 @@ export function SubscriptionDetail({
         )}
 
         {showCreditDialog && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50" onClick={() => setShowCreditDialog(false)}>
+          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50" onClick={() => setShowCreditDialog(false)} role="dialog" aria-modal="true" aria-label="Apply credit">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Apply Credit</h3>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount (USD)</label>
