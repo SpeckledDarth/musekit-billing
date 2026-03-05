@@ -273,6 +273,131 @@ app.get('/api/gating/:userId/:feature', async (req, res) => {
   }
 });
 
+app.get('/api/admin/subscriptions', async (req, res) => {
+  try {
+    const { listAllSubscriptions } = await import('./admin');
+    const result = await listAllSubscriptions({
+      page: parseInt(req.query.page as string) || 1,
+      perPage: parseInt(req.query.perPage as string) || 25,
+      search: (req.query.search as string) || undefined,
+      status: (req.query.status as any) || 'all',
+      sortBy: (req.query.sortBy as string) || 'created_at',
+      sortOrder: (req.query.sortOrder as 'asc' | 'desc') || 'desc',
+    });
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/admin/subscriptions/:id', async (req, res) => {
+  try {
+    const { getSubscriptionDetail } = await import('./admin');
+    const detail = await getSubscriptionDetail(req.params.id);
+    if (!detail) {
+      return res.status(404).json({ error: 'Subscription not found' });
+    }
+    res.json(detail);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/admin/subscriptions/:id/invoices', async (req, res) => {
+  try {
+    const { getSubscriptionDetail, getSubscriptionInvoices } = await import('./admin');
+    const detail = await getSubscriptionDetail(req.params.id);
+    if (!detail?.stripe_subscription_id) {
+      return res.json({ invoices: [] });
+    }
+    const result = await getSubscriptionInvoices(detail.stripe_subscription_id);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/subscriptions/:id/cancel', async (req, res) => {
+  try {
+    const { getSubscriptionDetail, cancelSubscription } = await import('./admin');
+    const detail = await getSubscriptionDetail(req.params.id);
+    if (!detail?.stripe_subscription_id) {
+      return res.status(400).json({ error: 'No Stripe subscription found' });
+    }
+    await cancelSubscription(detail.stripe_subscription_id, req.body.immediate === true);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/subscriptions/:id/change-plan', async (req, res) => {
+  try {
+    const { getSubscriptionDetail, changeSubscriptionPlan } = await import('./admin');
+    const { newPriceId } = req.body;
+    if (!newPriceId) {
+      return res.status(400).json({ error: 'Missing newPriceId' });
+    }
+    const detail = await getSubscriptionDetail(req.params.id);
+    if (!detail?.stripe_subscription_id) {
+      return res.status(400).json({ error: 'No Stripe subscription found' });
+    }
+    await changeSubscriptionPlan(detail.stripe_subscription_id, newPriceId);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/subscriptions/:id/extend-trial', async (req, res) => {
+  try {
+    const { getSubscriptionDetail, extendTrial } = await import('./admin');
+    const { trialEndDate } = req.body;
+    if (!trialEndDate) {
+      return res.status(400).json({ error: 'Missing trialEndDate' });
+    }
+    const detail = await getSubscriptionDetail(req.params.id);
+    if (!detail?.stripe_subscription_id) {
+      return res.status(400).json({ error: 'No Stripe subscription found' });
+    }
+    await extendTrial(detail.stripe_subscription_id, new Date(trialEndDate));
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/subscriptions/:id/credit', async (req, res) => {
+  try {
+    const { getSubscriptionDetail } = await import('./admin');
+    const { applyCredit } = await import('./admin');
+    const { amount, description } = req.body;
+    if (!amount) {
+      return res.status(400).json({ error: 'Missing amount' });
+    }
+    const detail = await getSubscriptionDetail(req.params.id);
+    if (!detail) {
+      return res.status(404).json({ error: 'Subscription not found' });
+    }
+
+    const supabase = (await import('./lib/database')).getSupabaseAdmin();
+    const { data: profile } = await (supabase
+      .from('profiles')
+      .select('stripe_customer_id')
+      .eq('id', detail.user_id)
+      .single() as any);
+
+    if (!profile?.stripe_customer_id) {
+      return res.status(400).json({ error: 'No Stripe customer found for user' });
+    }
+
+    await applyCredit(profile.stripe_customer_id, amount, description || 'Admin credit');
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`@musekit/billing dev server running on http://0.0.0.0:${PORT}`);
   console.log(`Environment: development`);

@@ -1,29 +1,37 @@
 # @musekit/billing
 
-Stripe billing module for the MuseKit SaaS platform. This is a standalone npm package providing the complete Stripe billing system (logic/API only, no UI components).
+Stripe billing module for the MuseKit SaaS platform. Provides complete Stripe billing system including checkout, webhooks, feature gating, subscription management, admin actions, UI components, and SEO helpers.
 
 ## Tech Stack
 - **Runtime**: Node.js 20 with TypeScript (strict mode)
 - **Framework**: Express.js dev server on port 5000
 - **Billing**: Stripe SDK (development/test mode)
 - **Database**: Supabase (profiles + muse_product_subscriptions tables)
+- **UI**: React 18 components with Tailwind CSS classes, sonner (toasts), lucide-react (icons)
 - **Build**: TypeScript compiler, tsx for dev
 
 ## Project Structure
 ```
 src/
-├── index.ts          # Main export barrel
-├── server.ts         # Express dev server (port 5000)
-├── stripe.ts         # Stripe client initialization
-├── plans.ts          # Plan tier definitions (Starter/Basic/Premium)
-├── checkout.ts       # Checkout session, portal, subscription status
-├── webhooks.ts       # Stripe webhook handler
-├── gating.ts         # Feature access gating and plan guards
-├── registry.ts       # Multi-product tier resolution
-├── helpers.ts        # Subscription utility helpers
+├── index.ts                    # Main export barrel
+├── server.ts                   # Express dev server (port 5000)
+├── stripe.ts                   # Stripe client initialization
+├── plans.ts                    # Plan tier definitions (Starter/Basic/Premium)
+├── checkout.ts                 # Checkout session, portal, subscription status
+├── webhooks.ts                 # Stripe webhook handler
+├── gating.ts                   # Feature access gating and plan guards
+├── registry.ts                 # Multi-product tier resolution
+├── helpers.ts                  # Subscription utility helpers
+├── admin.ts                    # Admin Stripe actions (cancel, change plan, extend trial, credit, list)
+├── seo.ts                      # SEO metadata and JSON-LD structured data helpers
+├── components/
+│   ├── index.ts                # Component barrel export
+│   ├── SubscriptionDetail.tsx  # Subscription detail slide-over with admin actions
+│   ├── SubscriptionList.tsx    # Sortable/filterable subscription table with bulk ops
+│   └── PricingPage.tsx         # Public pricing page with Stripe checkout integration
 └── lib/
-    ├── shared/       # Shared types (local stub for @musekit/shared)
-    └── database/     # Supabase client (local stub for @musekit/database)
+    ├── shared/                 # Shared types (local stub for @musekit/shared)
+    └── database/               # Supabase client (local stub for @musekit/database)
 ```
 
 ## Environment Secrets
@@ -48,3 +56,20 @@ src/
 - POST `/api/webhooks/stripe` — Stripe webhook endpoint
 - GET `/api/subscription/:userId` — Get subscription status
 - GET `/api/gating/:userId/:feature` — Check feature access
+- GET `/api/admin/subscriptions` — List subscriptions (paginated, searchable, filterable)
+- GET `/api/admin/subscriptions/:id` — Get subscription detail
+- GET `/api/admin/subscriptions/:id/invoices` — Get subscription invoices
+- POST `/api/admin/subscriptions/:id/cancel` — Cancel subscription
+- POST `/api/admin/subscriptions/:id/change-plan` — Change subscription plan
+- POST `/api/admin/subscriptions/:id/extend-trial` — Extend trial period
+- POST `/api/admin/subscriptions/:id/credit` — Apply credit to customer
+
+## Components
+All components use "use client" directive and are designed for Next.js 14 integration.
+- **SubscriptionDetail** — Slide-over panel showing subscription info, payment history, status timeline, and admin actions (cancel, change plan, extend trial, apply credit) with confirmation dialogs
+- **SubscriptionList** — Data table with column sorting, search, status/plan filters, pagination, bulk operations, CSV export, and clickable rows
+- **PricingPage** — Responsive pricing grid with monthly/annual toggle, Stripe checkout integration, login-aware CTAs
+
+## SEO Exports
+- `getPricingMetadata()` — Returns Next.js Metadata for pricing page (title, description, OpenGraph, Twitter)
+- `getPricingSchema()` — Returns JSON-LD Product structured data with pricing Offers

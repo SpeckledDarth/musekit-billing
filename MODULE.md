@@ -1,6 +1,6 @@
 # @musekit/billing
 
-The billing module for the MuseKit SaaS platform. Provides complete Stripe billing integration including checkout, webhooks, feature gating, and subscription management.
+The billing module for the MuseKit SaaS platform. Provides complete Stripe billing integration including checkout, webhooks, feature gating, subscription management, admin actions, UI components, and SEO helpers.
 
 ## Installation
 
@@ -42,6 +42,15 @@ npm install @musekit/billing
 - `getRegisteredProduct(productId)` — Get registered product
 - `getAllRegisteredProducts()` — List all products
 
+### Admin Actions
+- `listAllSubscriptions(options)` — List subscriptions with pagination, search, filters, sorting (joined with profiles)
+- `getSubscriptionDetail(subscriptionId)` — Get full subscription detail with user info
+- `cancelSubscription(stripeSubscriptionId, immediate?)` — Cancel via Stripe (end-of-period or immediate)
+- `changeSubscriptionPlan(stripeSubscriptionId, newPriceId)` — Upgrade/downgrade plan
+- `extendTrial(stripeSubscriptionId, trialEndDate)` — Extend trial period
+- `applyCredit(stripeCustomerId, amount, description)` — Apply credit balance
+- `getSubscriptionInvoices(stripeSubscriptionId)` — List invoices for a subscription
+
 ### Helpers
 - `isActive(subscription)` — Is subscription active?
 - `isPastDue(subscription)` — Is payment past due?
@@ -50,6 +59,44 @@ npm install @musekit/billing
 - `daysUntilRenewal(subscription)` — Days until renewal
 - `formatPlanName(planId)` — Human-readable plan name
 - `formatPrice(amount, interval)` — Formatted price string
+
+### SEO
+- `getPricingMetadata(options?)` — Next.js Metadata for pricing page (title, description, OpenGraph, Twitter cards)
+- `getPricingSchema(plans?, options?)` — JSON-LD Product structured data with Offer items for Google rich results
+
+### Components
+All components use `"use client"` directive and Tailwind CSS classes.
+
+#### SubscriptionDetail
+Slide-over panel displaying full subscription info with admin actions.
+```tsx
+<SubscriptionDetail
+  subscriptionId="..."
+  onClose={() => {}}
+  apiBasePath="/api/admin"
+  onUpdated={() => refetch()}
+/>
+```
+
+#### SubscriptionList
+Sortable, filterable subscription table with bulk operations.
+```tsx
+<SubscriptionList
+  apiBasePath="/api/admin"
+  onSelectSubscription={(sub) => setSelected(sub)}
+/>
+```
+
+#### PricingPage
+Public pricing page with Stripe checkout integration.
+```tsx
+<PricingPage
+  plans={getAllPlans()}
+  userId={session?.user?.id}
+  checkoutApiPath="/api/checkout"
+  currentPlan="starter"
+/>
+```
 
 ## Plan Tiers
 
