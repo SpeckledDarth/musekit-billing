@@ -281,6 +281,7 @@ app.get('/api/admin/subscriptions', async (req, res) => {
       perPage: parseInt(req.query.perPage as string) || 25,
       search: (req.query.search as string) || undefined,
       status: (req.query.status as any) || 'all',
+      planTier: (req.query.planTier as string) || 'all',
       sortBy: (req.query.sortBy as string) || 'created_at',
       sortOrder: (req.query.sortOrder as 'asc' | 'desc') || 'desc',
     });

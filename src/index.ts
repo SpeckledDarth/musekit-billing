@@ -67,6 +67,9 @@ export type {
   ListSubscriptionsResult,
 } from './admin';
 
+export { logAuditEvent } from './audit';
+export type { AuditLogEntry } from './audit';
+
 export {
   getPricingMetadata,
   getPricingSchema,

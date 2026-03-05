@@ -23,6 +23,7 @@ src/
 ├── registry.ts                 # Multi-product tier resolution
 ├── helpers.ts                  # Subscription utility helpers
 ├── admin.ts                    # Admin Stripe actions (cancel, change plan, extend trial, credit, list)
+├── audit.ts                    # Audit logging for admin mutations (DB + console fallback)
 ├── seo.ts                      # SEO metadata and JSON-LD structured data helpers
 ├── components/
 │   ├── index.ts                # Component barrel export
@@ -66,8 +67,8 @@ src/
 
 ## Components
 All components use "use client" directive and are designed for Next.js 14 integration.
-- **SubscriptionDetail** — Slide-over panel showing subscription info, payment history, status timeline, and admin actions (cancel, change plan, extend trial, apply credit) with confirmation dialogs
-- **SubscriptionList** — Data table with column sorting, search, status/plan filters, pagination, bulk operations, CSV export, and clickable rows
+- **SubscriptionDetail** — Slide-over panel showing subscription info (plan name, MRR), payment history, status timeline, navigable breadcrumb, and admin actions (cancel, change plan, extend trial, apply credit) with confirmation dialogs. All admin actions emit audit log entries.
+- **SubscriptionList** — Data table with column sorting (User, Plan, MRR, Status, Created, Period End), search, status filter, plan tier filter (All/Starter/Basic/Premium), pagination (25/page, URL-persisted), bulk cancel with floating action bar, CSV export (includes Plan and MRR columns), and clickable rows
 - **PricingPage** — Responsive pricing grid with monthly/annual toggle, Stripe checkout integration, login-aware CTAs
 
 ## SEO Exports

@@ -28,6 +28,8 @@ export interface SubscriptionDetailData {
   updated_at: string;
   user_email: string | null;
   user_name: string | null;
+  plan_name: string | null;
+  mrr: number;
 }
 
 interface Invoice {
@@ -273,8 +275,10 @@ export function SubscriptionDetail({
       >
         <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center z-10">
           <div>
-            <nav className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-              Subscriptions / Detail
+            <nav className="text-sm text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
+              <button onClick={onClose} className="hover:text-gray-700 dark:hover:text-gray-200 underline">Subscriptions</button>
+              <span>/</span>
+              <span>Detail</span>
             </nav>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               Subscription Details
@@ -310,8 +314,11 @@ export function SubscriptionDetail({
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Stripe Price ID</label>
-              <p className="mt-1 text-sm text-gray-900 dark:text-white font-mono">{subscription.stripe_price_id || '—'}</p>
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Plan</label>
+              <p className="mt-1 text-sm text-gray-900 dark:text-white font-medium">{subscription.plan_name || '—'}</p>
+              {subscription.mrr > 0 && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">${(subscription.mrr / 100).toFixed(0)}/mo MRR</p>
+              )}
             </div>
             <div>
               <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Period End</label>

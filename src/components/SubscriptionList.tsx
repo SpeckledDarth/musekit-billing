@@ -29,6 +29,8 @@ export interface SubscriptionListItem {
   updated_at: string;
   user_email: string | null;
   user_name: string | null;
+  plan_name: string | null;
+  mrr: number;
 }
 
 export interface SubscriptionListProps {
@@ -36,7 +38,7 @@ export interface SubscriptionListProps {
   onSelectSubscription?: (subscription: SubscriptionListItem) => void;
 }
 
-type SortField = 'user_name' | 'status' | 'stripe_price_id' | 'created_at' | 'current_period_end';
+type SortField = 'user_name' | 'status' | 'plan_name' | 'mrr' | 'created_at' | 'current_period_end';
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
@@ -77,9 +79,10 @@ function TableSkeleton() {
         <div key={i} className="flex items-center gap-4 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
           <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
           <div className="flex-1 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
-          <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
           <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
-          <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="w-14 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
           <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
         </div>
       ))}
@@ -98,6 +101,7 @@ export function SubscriptionList({
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [planFilter, setPlanFilter] = useState('all');
   const [sortBy, setSortBy] = useState<SortField>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -117,6 +121,7 @@ export function SubscriptionList({
       });
       if (search) params.set('search', search);
       if (statusFilter !== 'all') params.set('status', statusFilter);
+      if (planFilter !== 'all') params.set('planTier', planFilter);
 
       const res = await fetch(`${apiBasePath}/subscriptions?${params}`);
       if (!res.ok) throw new Error('Failed to fetch');
@@ -130,7 +135,7 @@ export function SubscriptionList({
     } finally {
       setLoading(false);
     }
-  }, [apiBasePath, page, search, statusFilter, sortBy, sortOrder]);
+  }, [apiBasePath, page, search, statusFilter, planFilter, sortBy, sortOrder]);
 
   useEffect(() => {
     fetchSubscriptions();
@@ -141,11 +146,13 @@ export function SubscriptionList({
     const p = params.get('page');
     const s = params.get('search');
     const st = params.get('status');
+    const pt = params.get('planTier');
     const sb = params.get('sortBy');
     const so = params.get('sortOrder');
     if (p) setPage(parseInt(p));
     if (s) setSearch(s);
     if (st) setStatusFilter(st);
+    if (pt) setPlanFilter(pt);
     if (sb) setSortBy(sb as SortField);
     if (so) setSortOrder(so as 'asc' | 'desc');
   }, []);
@@ -155,12 +162,13 @@ export function SubscriptionList({
     if (page > 1) params.set('page', page.toString());
     if (search) params.set('search', search);
     if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (planFilter !== 'all') params.set('planTier', planFilter);
     if (sortBy !== 'created_at') params.set('sortBy', sortBy);
     if (sortOrder !== 'desc') params.set('sortOrder', sortOrder);
     const qs = params.toString();
     const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
     window.history.replaceState(null, '', newUrl);
-  }, [page, search, statusFilter, sortBy, sortOrder]);
+  }, [page, search, statusFilter, planFilter, sortBy, sortOrder]);
 
   const handleSort = (field: SortField) => {
     if (sortBy === field) {
@@ -219,12 +227,13 @@ export function SubscriptionList({
   };
 
   const exportCsv = () => {
-    const headers = ['User', 'Email', 'Status', 'Price ID', 'Created', 'Period End'];
+    const headers = ['User', 'Email', 'Plan', 'MRR', 'Status', 'Created', 'Period End'];
     const rows = subscriptions.map((s) => [
       s.user_name || '',
       s.user_email || '',
+      s.plan_name || '',
+      s.mrr > 0 ? `$${(s.mrr / 100).toFixed(0)}` : '',
       s.status,
-      s.stripe_price_id || '',
       s.created_at,
       s.current_period_end || '',
     ]);
@@ -282,6 +291,16 @@ export function SubscriptionList({
           <option value="past_due">Past Due</option>
           <option value="canceled">Canceled</option>
         </select>
+        <select
+          value={planFilter}
+          onChange={(e) => { setPlanFilter(e.target.value); setPage(1); }}
+          className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+        >
+          <option value="all">All Plans</option>
+          <option value="starter">Starter</option>
+          <option value="basic">Basic</option>
+          <option value="premium">Premium</option>
+        </select>
       </div>
 
       {selectedIds.size > 0 && (
@@ -312,7 +331,7 @@ export function SubscriptionList({
             <Users className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
             <p className="text-sm font-medium text-gray-900 dark:text-white">No subscriptions found</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {search || statusFilter !== 'all' ? 'Try adjusting your filters' : 'No subscriptions have been created yet'}
+              {search || statusFilter !== 'all' || planFilter !== 'all' ? 'Try adjusting your filters' : 'No subscriptions have been created yet'}
             </p>
           </div>
         ) : (
@@ -335,9 +354,15 @@ export function SubscriptionList({
                 </th>
                 <th
                   className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase cursor-pointer group"
-                  onClick={() => handleSort('stripe_price_id')}
+                  onClick={() => handleSort('plan_name')}
                 >
-                  <span className="inline-flex items-center gap-1">Plan <SortIcon field="stripe_price_id" /></span>
+                  <span className="inline-flex items-center gap-1">Plan <SortIcon field="plan_name" /></span>
+                </th>
+                <th
+                  className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase cursor-pointer group"
+                  onClick={() => handleSort('mrr')}
+                >
+                  <span className="inline-flex items-center gap-1">MRR <SortIcon field="mrr" /></span>
                 </th>
                 <th
                   className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase cursor-pointer group"
@@ -380,8 +405,11 @@ export function SubscriptionList({
                       <p className="text-xs text-gray-500 dark:text-gray-400">{sub.user_email || ''}</p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-700 dark:text-gray-300 font-mono text-xs">
-                    {sub.stripe_price_id ? sub.stripe_price_id.slice(0, 20) + '...' : '—'}
+                  <td className="px-4 py-3 text-gray-700 dark:text-gray-300 text-sm">
+                    {sub.plan_name || '—'}
+                  </td>
+                  <td className="px-4 py-3 text-gray-700 dark:text-gray-300 text-sm font-medium">
+                    {sub.mrr > 0 ? `$${(sub.mrr / 100).toFixed(0)}` : '—'}
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={sub.status} />
