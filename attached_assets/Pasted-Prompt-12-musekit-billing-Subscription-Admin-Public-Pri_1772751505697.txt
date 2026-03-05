@@ -1,0 +1,124 @@
+Prompt 12: musekit-billing — Subscription Admin + Public Pricing Page + Stripe Checkout
+Module Repl
+musekit-billing (GitHub: SpeckledDarth/musekit-billing)
+
+Context
+The billing package has solid backend infrastructure (Stripe integration, checkout sessions, webhook handling, feature gating, plan definitions). But the user-facing and admin-facing UIs are incomplete:
+
+The Revenue admin page shows MRR charts and transaction history but has no drill-through to subscription details and no CRUD actions.
+The public /pricing route doesn't exist — the nav links to it but the page was never created.
+There's no way for users to actually subscribe from the app.
+Part A: Subscription Detail & Admin Actions
+Current state (revenue.tsx in musekit-admin):
+Shows MRR/ARR/ARPU stat cards
+Revenue by plan chart
+Transaction history table with search and CSV export
+No column sorting
+No row click-through
+No ability to manage subscriptions
+Required — create exportable components in the billing package:
+SubscriptionDetail component (src/components/SubscriptionDetail.tsx):
+
+Displays full subscription info: user name/email, plan tier, status, start date, current period end, cancel_at_period_end flag, Stripe subscription ID
+Payment history: list of associated invoices/charges with amounts and dates
+Status timeline: visual timeline showing subscription lifecycle events
+Admin actions:
+Cancel subscription (with end-of-period or immediate options)
+Extend trial (set new trial end date)
+Change plan (upgrade/downgrade)
+Apply credit/discount
+All actions should call Stripe API via server-side API routes
+SubscriptionList component (src/components/SubscriptionList.tsx):
+
+Table of all subscriptions from muse_product_subscriptions joined with profiles
+Columns: User, Plan, Status, MRR, Start Date, Period End
+Column sorting on all columns (click header to sort asc/desc with indicator)
+Search by user name/email
+Filter by status (All / Active / Trialing / Past Due / Canceled) and plan tier (All / Starter / Basic / Premium)
+Clickable rows → open SubscriptionDetail as modal or slide-over panel
+Export CSV
+Export both components from src/index.ts
+
+Part B: Public Pricing Page Component
+Current state:
+apps/web/src/components/pricing.tsx exists but is a static frontend component
+The /pricing route doesn't exist in the app router
+No connection to the billing package's plan definitions or Stripe checkout
+Required — create in the billing package:
+PricingPage component (src/components/PricingPage.tsx):
+
+Pull plan data from the billing package's plan configuration (plans.ts)
+Display plan cards: name, price, features list, CTA button
+Highlight recommended/popular plan
+Toggle between monthly/annual pricing (if applicable)
+Support free tier / "Contact Us" for enterprise
+Responsive grid layout (1 column mobile, 3 columns desktop)
+Stripe checkout integration:
+
+CTA button should call createCheckoutSession() from checkout.ts
+If user is logged in → redirect to Stripe Checkout
+If user is not logged in → redirect to /signup?plan=<tier> (signup first, then checkout)
+After successful checkout → redirect back to /dashboard
+Export PricingPage from src/index.ts
+
+Part C: Integration Rules
+All components must use "use client" directive
+All Supabase imports must use relative paths (NOT @/)
+Use next/navigation (NOT next/router) for any routing
+Stripe calls must go through API routes (never expose secret key client-side)
+Export everything from barrel src/index.ts
+Database Reference
+The muse_product_subscriptions table:
+
+Column	Type
+id	uuid (PK)
+user_id	uuid
+product_slug	text
+stripe_subscription_id	text
+stripe_price_id	text
+tier_id	text
+status	text
+current_period_end	timestamptz
+cancel_at_period_end	boolean
+created_at	timestamptz
+updated_at	timestamptz
+STANDARD E Cross-Reference
+Apply all UX Standards from Prompt 09 STANDARD E to every component in this module:
+
+Toast notifications (sonner) on every mutation
+Empty states on every list with zero rows
+Confirmation dialogs on all destructive operations (cancel subscription, etc.)
+Dark mode (dark: classes) on all UI
+Loading skeletons on every data-fetching page
+Unsaved changes warning on every form
+Form validation with inline error messages
+Relative timestamps with hover tooltips
+Row counts in list page titles
+Breadcrumbs on every detail/drill-down page
+Pagination (25 rows/page, page in URL)
+URL-persisted filters (search, filter, sort in query params)
+Bulk operations (checkbox column, floating action bar)
+CSV export on every list view
+Audit logging on every create/update/delete mutation
+SEO: Pricing Page Metadata
+The pricing page is public-facing and must have complete SEO metadata. Export a server-side metadata helper:
+
+export async function getPricingMetadata(): Promise<Metadata> {
+  // Query branding settings for appName, description
+  // Return: title, description, openGraph, twitter cards
+  // Include Product structured data with pricing offers
+}
+The integration Repl will use this in the /pricing route's generateMetadata export.
+
+Pricing Structured Data
+Export a getPricingSchema(plans) function that returns JSON-LD Product structured data with Offer items for each plan tier. This enables Google rich results showing pricing in search.
+
+Sitemap Integration
+The pricing page should be included in the sitemap. The CMS package's generateSitemap() function will include /pricing as a static route with priority 0.7.
+
+After Fix
+Push to GitHub. The integration Repl will:
+
+Wire SubscriptionList and SubscriptionDetail into the admin revenue page
+Create /pricing route using PricingPage with generateMetadata using getPricingMetadata()
+Wire Stripe checkout API routes
