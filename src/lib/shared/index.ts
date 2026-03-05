@@ -9,19 +9,16 @@ interface ProfileRow {
   updated_at: string;
 }
 
-interface SubscriptionRow {
+interface MuseProductSubscriptionRow {
   id: string;
   user_id: string;
+  product_slug: string | null;
   stripe_subscription_id: string | null;
-  stripe_customer_id: string | null;
-  plan_id: string;
+  stripe_price_id: string | null;
+  tier_id: string | null;
   status: string;
-  current_period_start: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
-  canceled_at: string | null;
-  trial_start: string | null;
-  trial_end: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -34,14 +31,13 @@ export interface Database {
         Insert: Partial<ProfileRow> & { id: string };
         Update: Partial<ProfileRow>;
       };
-      subscriptions: {
-        Row: SubscriptionRow;
-        Insert: Partial<SubscriptionRow> & {
+      muse_product_subscriptions: {
+        Row: MuseProductSubscriptionRow;
+        Insert: Partial<MuseProductSubscriptionRow> & {
           user_id: string;
-          plan_id: string;
           status: string;
         };
-        Update: Partial<SubscriptionRow>;
+        Update: Partial<MuseProductSubscriptionRow>;
       };
     };
     Views: Record<string, never>;
@@ -56,16 +52,13 @@ export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 export interface Subscription {
   id: string;
   user_id: string;
+  product_slug: string | null;
   stripe_subscription_id: string | null;
-  stripe_customer_id: string | null;
-  plan_id: string;
+  stripe_price_id: string | null;
+  tier_id: string | null;
   status: SubscriptionStatus;
-  current_period_start: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
-  canceled_at: string | null;
-  trial_start: string | null;
-  trial_end: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -1,5 +1,5 @@
 import { getStripe } from './stripe';
-import { getPlan } from './plans';
+import { getPlan, getPlanByPriceId } from './plans';
 import { getSupabaseAdmin } from './lib/database';
 import type { PlanId, Subscription } from './lib/shared';
 
@@ -103,7 +103,7 @@ export async function getSubscriptionStatus(userId: string): Promise<{
   const supabase = getSupabaseAdmin();
 
   const { data: subscription } = await supabase
-    .from('subscriptions')
+    .from('muse_product_subscriptions')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -121,9 +121,15 @@ export async function getSubscriptionStatus(userId: string): Promise<{
   const subData = subscription as unknown as Subscription;
   const isActive = ['active', 'trialing'].includes(subData.status);
 
+  let plan: PlanId = 'starter';
+  if (isActive && subData.stripe_price_id) {
+    const resolvedPlan = getPlanByPriceId(subData.stripe_price_id);
+    plan = resolvedPlan?.id || 'starter';
+  }
+
   return {
     subscription: subData,
-    plan: (isActive ? subData.plan_id : 'starter') as PlanId,
+    plan,
     isActive,
   };
 }

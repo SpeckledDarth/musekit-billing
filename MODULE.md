@@ -61,8 +61,8 @@ npm install @musekit/billing
 
 ## Supabase Tables
 
-### subscriptions
-Stores subscription records linked to Stripe.
+### muse_product_subscriptions
+Stores subscription records linked to Stripe. Columns: `id`, `user_id`, `product_slug`, `stripe_subscription_id`, `stripe_price_id`, `tier_id`, `status`, `current_period_end`, `cancel_at_period_end`, `created_at`, `updated_at`.
 
 ### profiles
 User profiles with `stripe_customer_id` for Stripe customer linkage.

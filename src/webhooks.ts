@@ -42,10 +42,9 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
   const supabase = getSupabaseAdmin();
   const userId = session.metadata?.userId;
-  const planId = session.metadata?.planId;
 
-  if (!userId || !planId) {
-    console.error('Missing userId or planId in checkout session metadata');
+  if (!userId) {
+    console.error('Missing userId in checkout session metadata');
     return;
   }
 
@@ -60,14 +59,14 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   const sub = subscription as any;
 
-  const { error } = await (supabase.from('subscriptions') as any).upsert(
+  const stripePriceId = sub.items?.data?.[0]?.price?.id || null;
+
+  const { error } = await (supabase.from('muse_product_subscriptions') as any).upsert(
     {
       user_id: userId,
       stripe_subscription_id: subscriptionId,
-      stripe_customer_id: session.customer as string,
-      plan_id: planId,
+      stripe_price_id: stripePriceId,
       status: sub.status,
-      current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
       current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
       cancel_at_period_end: sub.cancel_at_period_end,
     },
@@ -90,19 +89,14 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
     return;
   }
 
-  const priceId = sub.items?.data?.[0]?.price?.id;
-  const plan = priceId ? getPlanByPriceId(priceId) : null;
+  const stripePriceId = sub.items?.data?.[0]?.price?.id || null;
 
-  const { error } = await (supabase.from('subscriptions') as any)
+  const { error } = await (supabase.from('muse_product_subscriptions') as any)
     .update({
       status: sub.status,
-      plan_id: plan?.id || 'starter',
-      current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
+      stripe_price_id: stripePriceId,
       current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
       cancel_at_period_end: sub.cancel_at_period_end,
-      canceled_at: sub.canceled_at
-        ? new Date(sub.canceled_at * 1000).toISOString()
-        : null,
       updated_at: new Date().toISOString(),
     })
     .eq('user_id', userId);
@@ -123,10 +117,9 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
     return;
   }
 
-  const { error } = await (supabase.from('subscriptions') as any)
+  const { error } = await (supabase.from('muse_product_subscriptions') as any)
     .update({
       status: 'canceled',
-      canceled_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
     .eq('user_id', userId);
@@ -144,7 +137,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
 
   if (!subscriptionId) return;
 
-  const { error } = await (supabase.from('subscriptions') as any)
+  const { error } = await (supabase.from('muse_product_subscriptions') as any)
     .update({
       status: 'active',
       updated_at: new Date().toISOString(),
@@ -164,7 +157,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
 
   if (!subscriptionId) return;
 
-  const { error } = await (supabase.from('subscriptions') as any)
+  const { error } = await (supabase.from('muse_product_subscriptions') as any)
     .update({
       status: 'past_due',
       updated_at: new Date().toISOString(),

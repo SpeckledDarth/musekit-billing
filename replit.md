@@ -6,7 +6,7 @@ Stripe billing module for the MuseKit SaaS platform. This is a standalone npm pa
 - **Runtime**: Node.js 20 with TypeScript (strict mode)
 - **Framework**: Express.js dev server on port 5000
 - **Billing**: Stripe SDK (development/test mode)
-- **Database**: Supabase (profiles + subscriptions tables)
+- **Database**: Supabase (profiles + muse_product_subscriptions tables)
 - **Build**: TypeScript compiler, tsx for dev
 
 ## Project Structure
