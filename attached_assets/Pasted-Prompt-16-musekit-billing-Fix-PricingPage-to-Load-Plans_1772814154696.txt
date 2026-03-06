@@ -1,0 +1,82 @@
+Prompt 16: musekit-billing — Fix PricingPage to Load Plans Internally
+Module Repl
+musekit-billing (GitHub: SpeckledDarth/musekit-billing)
+
+Context
+The PricingPage component (src/components/PricingPage.tsx) requires a plans prop of type PlanTierData[]. But the integration monorepo renders it without passing any plans:
+
+// apps/web/src/app/pricing/page.tsx
+<PricingPage />
+This crashes at runtime with TypeError: Cannot read properties of undefined (reading 'map') because plans is undefined.
+
+The plan data already exists in this package at src/plans.ts as PLANS (a Record<PlanId, PlanTier>) with getAllPlans() returning an array. The fix is to make plans optional and load it internally when not provided.
+
+The Fix
+1. Update PricingPage (src/components/PricingPage.tsx)
+Change the plans prop from required to optional. When plans is not provided, call getAllPlans() from ../plans to get the default plan data.
+
+Current interface:
+
+export interface PricingPageProps {
+  plans: PlanTierData[];
+  userId?: string | null;
+  checkoutApiPath?: string;
+  signupRedirect?: string;
+  dashboardRedirect?: string;
+  currentPlan?: string | null;
+}
+Fixed interface:
+
+export interface PricingPageProps {
+  plans?: PlanTierData[];
+  userId?: string | null;
+  checkoutApiPath?: string;
+  signupRedirect?: string;
+  dashboardRedirect?: string;
+  currentPlan?: string | null;
+}
+Inside the component, add a fallback at the top:
+
+import { getAllPlans } from '../plans';
+export function PricingPage({
+  plans: plansProp,
+  userId,
+  checkoutApiPath = '/api/checkout',
+  signupRedirect = '/signup',
+  dashboardRedirect = '/dashboard',
+  currentPlan,
+}: PricingPageProps) {
+  const plans = plansProp ?? getAllPlans().map(p => ({
+    id: p.id,
+    name: p.name,
+    description: p.description,
+    monthlyPrice: p.monthlyPrice,
+    annualPrice: p.annualPrice,
+    stripePriceIdMonthly: p.stripePriceIdMonthly,
+    stripePriceIdAnnual: p.stripePriceIdAnnual,
+    features: p.features,
+    popular: p.popular,
+  }));
+  // ... rest of component unchanged
+This way:
+
+If plans is passed explicitly, it uses those (backwards compatible)
+If plans is not passed (like <PricingPage />), it loads from the built-in PLANS config
+2. Verify the PlanTierData interface matches PlanTier
+The PlanTierData interface in PricingPage.tsx has all the same fields as PlanTier from plans.ts except limits. Make sure the mapping in the fallback correctly strips the limits field so TypeScript is happy.
+
+What NOT to Do
+Do NOT change any UI, layout, or styling
+Do NOT change any Stripe integration logic
+Do NOT change any other files besides PricingPage.tsx
+Do NOT add new API routes or server-side data fetching
+Do NOT change the plan data in plans.ts
+Verification Checklist
+Before reporting completion, confirm EACH of these items:
+
+ PricingPageProps.plans is typed as optional (plans?: PlanTierData[])
+ PricingPage renders correctly when called as <PricingPage /> (no props)
+ PricingPage still renders correctly when called as <PricingPage plans={customPlans} /> (with explicit plans)
+ getAllPlans() is imported from ../plans (not hardcoded plan data)
+ No TypeScript errors — the PlanTier to PlanTierData mapping handles the limits field difference
+ The component does NOT crash with "Cannot read properties of undefined (reading 'map')"
