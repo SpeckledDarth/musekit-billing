@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { Check, Loader2 } from 'lucide-react';
+import { getAllPlans } from '../plans';
 
 interface PlanTierData {
   id: string;
@@ -17,7 +18,7 @@ interface PlanTierData {
 }
 
 export interface PricingPageProps {
-  plans: PlanTierData[];
+  plans?: PlanTierData[];
   userId?: string | null;
   checkoutApiPath?: string;
   signupRedirect?: string;
@@ -26,13 +27,24 @@ export interface PricingPageProps {
 }
 
 export function PricingPage({
-  plans,
+  plans: plansProp,
   userId,
   checkoutApiPath = '/api/checkout',
   signupRedirect = '/signup',
   dashboardRedirect = '/dashboard',
   currentPlan,
 }: PricingPageProps) {
+  const plans = plansProp ?? getAllPlans().map(p => ({
+    id: p.id,
+    name: p.name,
+    description: p.description,
+    monthlyPrice: p.monthlyPrice,
+    annualPrice: p.annualPrice,
+    stripePriceIdMonthly: p.stripePriceIdMonthly,
+    stripePriceIdAnnual: p.stripePriceIdAnnual,
+    features: p.features,
+    popular: p.popular,
+  }));
   const [interval, setInterval] = useState<'month' | 'year'>('month');
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
