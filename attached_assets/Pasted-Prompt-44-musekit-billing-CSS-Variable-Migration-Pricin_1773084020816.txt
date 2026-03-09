@@ -1,0 +1,80 @@
+Prompt 44: musekit-billing — CSS Variable Migration (Pricing, Subscriptions, Payment History)
+Module Repl
+musekit-billing (GitHub: SpeckledDarth/musekit-billing)
+
+Context
+The billing package renders pricing tables, subscription management, and payment history. These components are user-facing and must reflect the brand. Currently they use ~25+ hardcoded Tailwind colors. After Prompt 38 (ThemeInjector) and Prompt 39 (shared Tailwind preset), all CSS variables are available.
+
+Reference: See docs/current/css-variable-contract.md for the complete list of available CSS variables, their types, defaults, and recommended Tailwind class replacements.
+
+Current State (verified March 9, 2026)
+No Tailwind Config
+packages/billing/ does NOT have its own tailwind.config.ts. It relies on the consuming app's config.
+
+Components (~137 hardcoded references across 3 files)
+Located in src/components/:
+
+SubscriptionDetail.tsx — 73 hardcoded refs — subscription details with payment history table, status badges, invoice links. Uses bg-white, dark:bg-gray-800, text-gray-*, border-gray-* extensively
+SubscriptionList.tsx — 45 hardcoded refs — list of active subscriptions with status indicators, toggle switches. Uses bg-white, bg-gray-*, text-gray-*, border-gray-*
+PricingPage.tsx — 19 hardcoded refs — pricing cards with tier comparison, billing toggle (monthly/annual). Uses bg-white dark:bg-gray-800, bg-gray-100 dark:bg-gray-800 for toggle, hardcoded border colors, text grays
+Server Status Page (src/server.ts) — 24 hardcoded refs
+This is a standalone HTML status/debug page rendered with raw CSS (not Tailwind). Contains hardcoded colors like #0f172a, #1e293b, #94a3b8, #6366f1, #4ade80, #fbbf24, #f87171. This page should also consume the brand primary color where applicable (badge color, popular plan border, price color).
+
+Common hardcoded classes across components: bg-white, bg-gray-100, text-gray-900, text-gray-600, text-gray-500, border-gray-200, dark:bg-gray-800, dark:text-white, dark:text-gray-400, dark:border-gray-700.
+
+The Fix
+1. Migrate PricingPage.tsx
+Card backgrounds: bg-white → bg-card, dark:bg-gray-800 → dark:bg-card
+Card borders: border-gray-200 → border-border
+Tier name: text-gray-900 → text-foreground
+Price: text-gray-900 → text-foreground
+Feature list text: text-gray-600 → text-muted-foreground
+CTA button: hardcoded blue → bg-primary text-primary-foreground
+Highlighted/popular tier: should use bg-primary or border-primary for emphasis
+Badge ("Popular", "Best Value"): should use bg-primary text-primary-foreground with --badge-radius
+2. Migrate SubscriptionList.tsx
+List container: bg-white → bg-card
+Subscription status badges: hardcoded green/red → text-success / text-danger
+Date text: text-gray-500 → text-muted-foreground
+Borders: border-gray-200 → border-border
+3. Migrate SubscriptionDetail.tsx (73 refs — largest file)
+All card/panel backgrounds: bg-white → bg-card, dark:bg-gray-800 → dark:bg-card
+All borders: border-gray-200 → border-border, dark:border-gray-700 → dark:border-border
+All text: text-gray-900 → text-foreground, text-gray-500/600 → text-muted-foreground
+Dark text: dark:text-white → dark:text-foreground, dark:text-gray-400 → dark:text-muted-foreground
+Payment history table: use design system <Table> component or apply --table-stripe-opacity, --table-border-opacity
+Status indicators: hardcoded colors → text-success (paid), text-warning (pending), text-danger (failed)
+Links to Stripe: text-blue-* → text-primary
+Any toggle switches: bg-gray-300 → bg-muted, active → bg-primary
+4. Migrate server.ts Status Page (24 refs)
+This standalone HTML page uses raw CSS (not Tailwind). Where the primary color is used for branding (badges, plan highlights, price display), pass it dynamically:
+
+.badge { background: #6366f1 } → use dynamic primary color from settings
+.plan-card.popular { border-color: #6366f1 } → use dynamic primary color
+.plan-card .price { color: #818cf8 } → use dynamic primary color (lighter shade)
+Status colors (green/yellow/red for ok/warn/err) are acceptable as hardcoded — they represent system health, not brand
+Neutral grays (#0f172a, #1e293b, #94a3b8, etc.) are acceptable — this is a debug page
+5. Any Other Billing Components
+Search for and fix all remaining hardcoded colors in src/.
+
+What NOT to Do
+Do NOT change any Stripe integration logic, webhook handling, or payment processing
+Do NOT change pricing data structures or plan tier logic
+Do NOT change component APIs or export signatures
+Do NOT create a tailwind.config.ts for this package
+Verification Checklist
+Hardcoded Color Elimination
+ grep -r "bg-white" src/ returns zero results
+ grep -r "bg-gray-" src/ returns zero results
+ grep -r "text-gray-" src/ returns zero results
+ grep -r "border-gray-" src/ returns zero results
+ grep -r "dark:bg-gray-" src/ returns zero results
+ grep -r "bg-blue-\|text-blue-" src/ returns zero results
+Semantic Usage
+ PricingPage CTA buttons use bg-primary text-primary-foreground
+ Subscription status badges use text-success / text-danger
+ Payment history table uses semantic border/stripe styling
+ All cards use bg-card text-card-foreground border-border
+Build
+ npx tsc --noEmit passes with zero errors
+ No changes to any exports or component APIs
