@@ -113,22 +113,22 @@ export function PricingPage({
     <div className="py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
             Choose Your Plan
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Start free and scale as you grow. All plans include core features with no hidden fees.
           </p>
         </div>
 
         <div className="flex justify-center mb-10">
-          <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800 rounded-full p-1">
+          <div className="inline-flex items-center bg-muted rounded-full p-1">
             <button
               onClick={() => setInterval('month')}
               className={`px-5 py-2 text-sm font-medium rounded-full transition-colors ${
                 interval === 'month'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Monthly
@@ -137,12 +137,12 @@ export function PricingPage({
               onClick={() => setInterval('year')}
               className={`px-5 py-2 text-sm font-medium rounded-full transition-colors ${
                 interval === 'year'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Annual
-              <span className="ml-1.5 text-xs text-green-600 dark:text-green-400 font-semibold">Save up to 17%</span>
+              <span className="ml-1.5 text-xs text-success font-semibold">Save up to 17%</span>
             </button>
           </div>
         </div>
@@ -160,52 +160,52 @@ export function PricingPage({
                 key={plan.id}
                 className={`relative flex flex-col rounded-2xl border p-8 ${
                   plan.popular
-                    ? 'border-indigo-500 dark:border-indigo-400 shadow-lg shadow-indigo-500/10'
-                    : 'border-gray-200 dark:border-gray-700'
-                } bg-white dark:bg-gray-900`}
+                    ? 'border-primary shadow-lg shadow-primary/10'
+                    : 'border-border'
+                } bg-card`}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-600 text-white">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-primary text-primary-foreground">
                       Most Popular
                     </span>
                   </div>
                 )}
 
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{plan.name}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{plan.description}</p>
+                  <h3 className="text-lg font-semibold text-foreground">{plan.name}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
                 </div>
 
                 <div className="mb-6">
                   <div className="flex items-baseline">
-                    <span className="text-4xl font-bold text-gray-900 dark:text-white">
+                    <span className="text-4xl font-bold text-foreground">
                       ${interval === 'year' && !isFreePlan ? monthlyEquiv : price}
                     </span>
                     {!isFreePlan && (
-                      <span className="ml-1 text-sm text-gray-500 dark:text-gray-400">/mo</span>
+                      <span className="ml-1 text-sm text-muted-foreground">/mo</span>
                     )}
                   </div>
                   {interval === 'year' && !isFreePlan && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       ${price}/year
                       {savings > 0 && (
-                        <span className="ml-1 text-green-600 dark:text-green-400 font-medium">
+                        <span className="ml-1 text-success font-medium">
                           Save ${savings}
                         </span>
                       )}
                     </p>
                   )}
                   {isFreePlan && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Free forever</p>
+                    <p className="text-sm text-muted-foreground mt-1">Free forever</p>
                   )}
                 </div>
 
                 <ul className="space-y-3 mb-8 flex-1">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{feature}</span>
+                      <Check className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-muted-foreground">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -215,10 +215,10 @@ export function PricingPage({
                   disabled={isCurrent || loadingPlan === plan.id}
                   className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
                     isCurrent
-                      ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                      ? 'bg-muted text-muted-foreground cursor-not-allowed'
                       : plan.popular
-                        ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
-                        : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100'
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
+                        : 'bg-foreground text-background hover:bg-foreground/90'
                   }`}
                 >
                   {loadingPlan === plan.id && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -234,9 +234,9 @@ export function PricingPage({
         </div>
 
         <div className="text-center mt-12">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             Need a custom plan for your enterprise?{' '}
-            <a href="/contact" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+            <a href="/contact" className="text-primary hover:underline font-medium">
               Contact us
             </a>
           </p>

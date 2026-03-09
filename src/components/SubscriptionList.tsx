@@ -42,11 +42,11 @@ type SortField = 'user_name' | 'status' | 'plan_name' | 'mrr' | 'created_at' | '
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-    trialing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-    past_due: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-    canceled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-    incomplete: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400',
+    active: 'bg-success/10 text-success',
+    trialing: 'bg-primary/10 text-primary',
+    past_due: 'bg-warning/10 text-warning',
+    canceled: 'bg-danger/10 text-danger',
+    incomplete: 'bg-muted text-muted-foreground',
   };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${colors[status] || colors.incomplete}`}>
@@ -76,14 +76,14 @@ function TableSkeleton() {
   return (
     <div className="animate-pulse">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="flex items-center gap-4 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-          <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
-          <div className="flex-1 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
-          <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
-          <div className="w-14 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
-          <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
-          <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
-          <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+        <div key={i} className="flex items-center gap-4 px-4 py-3 border-b border-border">
+          <div className="w-4 h-4 bg-muted rounded" />
+          <div className="flex-1 h-4 bg-muted rounded" />
+          <div className="w-16 h-4 bg-muted rounded" />
+          <div className="w-14 h-4 bg-muted rounded" />
+          <div className="w-16 h-4 bg-muted rounded" />
+          <div className="w-20 h-4 bg-muted rounded" />
+          <div className="w-24 h-4 bg-muted rounded" />
         </div>
       ))}
     </div>
@@ -192,10 +192,10 @@ export function SubscriptionList({
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortBy !== field) return <ChevronDown className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100" />;
+    if (sortBy !== field) return <ChevronDown className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100" />;
     return sortOrder === 'asc'
-      ? <ChevronUp className="w-3 h-3 text-indigo-500" />
-      : <ChevronDown className="w-3 h-3 text-indigo-500" />;
+      ? <ChevronUp className="w-3 h-3 text-primary" />
+      : <ChevronDown className="w-3 h-3 text-primary" />;
   };
 
   const toggleSelect = (id: string) => {
@@ -268,12 +268,12 @@ export function SubscriptionList({
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Subscriptions {!loading && <span className="text-sm font-normal text-gray-500 dark:text-gray-400">({total})</span>}
+        <h2 className="text-lg font-semibold text-foreground">
+          Subscriptions {!loading && <span className="text-sm font-normal text-muted-foreground">({total})</span>}
         </h2>
         <button
           onClick={exportCsv}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-muted-foreground bg-card border border-border rounded-lg hover:bg-muted"
         >
           <Download className="w-4 h-4" />
           Export CSV
@@ -282,19 +282,19 @@ export function SubscriptionList({
 
       <div className="flex flex-col sm:flex-row gap-3">
         <form onSubmit={handleSearchSubmit} className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or email..."
-            className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+            className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground"
           />
         </form>
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+          className="px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground"
         >
           <option value="all">All Statuses</option>
           <option value="active">Active</option>
@@ -305,7 +305,7 @@ export function SubscriptionList({
         <select
           value={planFilter}
           onChange={(e) => { setPlanFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+          className="px-3 py-2 text-sm border border-border rounded-lg bg-card text-foreground"
         >
           <option value="all">All Plans</option>
           <option value="starter">Starter</option>
@@ -315,18 +315,18 @@ export function SubscriptionList({
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="flex items-center justify-between px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg">
-          <span className="text-sm text-indigo-700 dark:text-indigo-300">{selectedIds.size} selected</span>
+        <div className="flex items-center justify-between px-4 py-2 bg-primary/10 border border-primary rounded-lg">
+          <span className="text-sm text-primary">{selectedIds.size} selected</span>
           <div className="flex gap-2">
             <button
               onClick={() => setSelectedIds(new Set())}
-              className="text-sm text-gray-600 dark:text-gray-400 hover:underline"
+              className="text-sm text-muted-foreground hover:underline"
             >
               Clear
             </button>
             <button
               onClick={() => setShowBulkCancelDialog(true)}
-              className="text-sm text-red-600 dark:text-red-400 hover:underline"
+              className="text-sm text-danger hover:underline"
             >
               Cancel Selected
             </button>
@@ -334,72 +334,72 @@ export function SubscriptionList({
         </div>
       )}
 
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+      <div className="border border-border rounded-lg overflow-hidden">
         {loading ? (
           <TableSkeleton />
         ) : subscriptions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
-            <Users className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
-            <p className="text-sm font-medium text-gray-900 dark:text-white">No subscriptions found</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <Users className="w-12 h-12 text-muted-foreground mb-3" />
+            <p className="text-sm font-medium text-foreground">No subscriptions found</p>
+            <p className="text-xs text-muted-foreground mt-1">
               {search || statusFilter !== 'all' || planFilter !== 'all' ? 'Try adjusting your filters' : 'No subscriptions have been created yet'}
             </p>
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-800">
+            <thead className="bg-muted">
               <tr>
                 <th className="w-10 px-4 py-3">
                   <input
                     type="checkbox"
                     checked={selectedIds.size === subscriptions.length && subscriptions.length > 0}
                     onChange={toggleSelectAll}
-                    className="rounded border-gray-300 dark:border-gray-600"
+                    className="rounded border-border"
                   />
                 </th>
                 <th
-                  className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase cursor-pointer group"
+                  className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase cursor-pointer group"
                   onClick={() => handleSort('user_name')}
                 >
                   <span className="inline-flex items-center gap-1">User <SortIcon field="user_name" /></span>
                 </th>
                 <th
-                  className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase cursor-pointer group"
+                  className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase cursor-pointer group"
                   onClick={() => handleSort('plan_name')}
                 >
                   <span className="inline-flex items-center gap-1">Plan <SortIcon field="plan_name" /></span>
                 </th>
                 <th
-                  className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase cursor-pointer group"
+                  className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase cursor-pointer group"
                   onClick={() => handleSort('mrr')}
                 >
                   <span className="inline-flex items-center gap-1">MRR <SortIcon field="mrr" /></span>
                 </th>
                 <th
-                  className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase cursor-pointer group"
+                  className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase cursor-pointer group"
                   onClick={() => handleSort('status')}
                 >
                   <span className="inline-flex items-center gap-1">Status <SortIcon field="status" /></span>
                 </th>
                 <th
-                  className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase cursor-pointer group"
+                  className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase cursor-pointer group"
                   onClick={() => handleSort('created_at')}
                 >
                   <span className="inline-flex items-center gap-1">Created <SortIcon field="created_at" /></span>
                 </th>
                 <th
-                  className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase cursor-pointer group"
+                  className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase cursor-pointer group"
                   onClick={() => handleSort('current_period_end')}
                 >
                   <span className="inline-flex items-center gap-1">Period End <SortIcon field="current_period_end" /></span>
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="divide-y divide-border">
               {subscriptions.map((sub) => (
                 <tr
                   key={sub.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer"
+                  className="hover:bg-muted cursor-pointer"
                   onClick={() => onSelectSubscription?.(sub)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectSubscription?.(sub); } }}
                   tabIndex={0}
@@ -411,28 +411,28 @@ export function SubscriptionList({
                       type="checkbox"
                       checked={selectedIds.has(sub.id)}
                       onChange={() => toggleSelect(sub.id)}
-                      className="rounded border-gray-300 dark:border-gray-600"
+                      className="rounded border-border"
                     />
                   </td>
                   <td className="px-4 py-3">
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{sub.user_name || 'Unknown'}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{sub.user_email || ''}</p>
+                      <p className="font-medium text-foreground">{sub.user_name || 'Unknown'}</p>
+                      <p className="text-xs text-muted-foreground">{sub.user_email || ''}</p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-700 dark:text-gray-300 text-sm">
+                  <td className="px-4 py-3 text-muted-foreground text-sm">
                     {sub.plan_name || '—'}
                   </td>
-                  <td className="px-4 py-3 text-gray-700 dark:text-gray-300 text-sm font-medium">
+                  <td className="px-4 py-3 text-muted-foreground text-sm font-medium">
                     {sub.mrr > 0 ? `$${(sub.mrr / 100).toFixed(0)}` : '—'}
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={sub.status} />
                   </td>
-                  <td className="px-4 py-3 text-gray-700 dark:text-gray-300" title={new Date(sub.created_at).toISOString()}>
+                  <td className="px-4 py-3 text-muted-foreground" title={new Date(sub.created_at).toISOString()}>
                     {relativeTime(sub.created_at)}
                   </td>
-                  <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {formatDate(sub.current_period_end)}
                   </td>
                 </tr>
@@ -444,21 +444,21 @@ export function SubscriptionList({
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             Page {page} of {totalPages}
           </p>
           <div className="flex gap-2">
             <button
               onClick={() => setPage(Math.max(1, page - 1))}
               disabled={page === 1}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm border border-border rounded-lg hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed text-muted-foreground"
             >
               <ChevronLeft className="w-4 h-4" /> Previous
             </button>
             <button
               onClick={() => setPage(Math.min(totalPages, page + 1))}
               disabled={page === totalPages}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm border border-border rounded-lg hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed text-muted-foreground"
             >
               Next <ChevronRight className="w-4 h-4" />
             </button>
@@ -468,27 +468,27 @@ export function SubscriptionList({
 
       {showBulkCancelDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowBulkCancelDialog(false)} role="dialog" aria-modal="true" aria-label="Bulk cancel subscriptions">
-          <div ref={dialogRef} tabIndex={-1} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 max-w-md w-full mx-4 outline-none" onClick={(e) => e.stopPropagation()}>
+          <div ref={dialogRef} tabIndex={-1} className="bg-card rounded-xl shadow-lg p-6 max-w-md w-full mx-4 outline-none" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <div className="w-10 h-10 rounded-full bg-danger/10 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-danger" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Cancel {selectedIds.size} Subscription(s)</h3>
+              <h3 className="text-lg font-semibold text-foreground">Cancel {selectedIds.size} Subscription(s)</h3>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               Are you sure you want to cancel {selectedIds.size} subscription(s)? They will be set to cancel at the end of their billing period.
             </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowBulkCancelDialog(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 dark:text-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
+                className="px-4 py-2 text-sm font-medium text-muted-foreground bg-muted rounded-lg hover:bg-muted/80"
               >
                 Keep
               </button>
               <button
                 onClick={handleBulkCancel}
                 disabled={bulkActionLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 text-sm font-medium bg-danger hover:bg-danger/90 text-danger-foreground rounded-lg disabled:opacity-50 flex items-center gap-2"
               >
                 {bulkActionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                 Confirm Cancel

@@ -37,14 +37,14 @@ app.get('/', (_req, res) => {
     .status-card .value.err { color: #f87171; }
     .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
     .plan-card { background: #1e293b; border-radius: 12px; padding: 1.5rem; border: 1px solid #334155; }
-    .plan-card.popular { border-color: #6366f1; }
+    .plan-card.popular { border-color: var(--primary, #6366f1); }
     .plan-card h2 { font-size: 1.25rem; color: #f1f5f9; margin-bottom: 0.25rem; }
-    .plan-card .price { font-size: 2rem; font-weight: 700; color: #818cf8; margin: 0.75rem 0; }
+    .plan-card .price { font-size: 2rem; font-weight: 700; color: var(--primary, #818cf8); margin: 0.75rem 0; }
     .plan-card .price span { font-size: 1rem; color: #94a3b8; font-weight: 400; }
     .plan-card ul { list-style: none; padding: 0; }
     .plan-card li { padding: 0.375rem 0; color: #cbd5e1; font-size: 0.875rem; }
     .plan-card li::before { content: "✓ "; color: #4ade80; }
-    .badge { display: inline-block; padding: 0.25rem 0.75rem; background: #6366f1; color: white; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; }
+    .badge { display: inline-block; padding: 0.25rem 0.75rem; background: var(--primary, #6366f1); color: white; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; }
     .section-title { font-size: 1.25rem; color: #f1f5f9; margin: 2rem 0 1rem; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
     .endpoints { background: #1e293b; border-radius: 12px; padding: 1.5rem; border: 1px solid #334155; }
     .endpoint { padding: 0.75rem 0; border-bottom: 1px solid #1e293b; }

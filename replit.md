@@ -7,7 +7,7 @@ Stripe billing module for the MuseKit SaaS platform. Provides complete Stripe bi
 - **Framework**: Express.js dev server on port 5000
 - **Billing**: Stripe SDK (development/test mode)
 - **Database**: Supabase (profiles + muse_product_subscriptions tables)
-- **UI**: React 18 components with Tailwind CSS classes, sonner (toasts), lucide-react (icons)
+- **UI**: React 18 components with semantic Tailwind CSS classes (CSS variable-based: bg-card, text-foreground, border-border, bg-primary, text-success, text-danger, text-warning, etc.), sonner (toasts), lucide-react (icons). Requires consuming app to have ThemeInjector (Prompt 38) and design-system shared preset (Prompt 39) active.
 - **Build**: TypeScript compiler, tsx for dev
 
 ## Project Structure
